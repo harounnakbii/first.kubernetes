@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: first-kubernetes
+  labels:
+    app: first-kubernetes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: first-kubernetes
+  template:
+    metadata:
+      labels:
+        app: first-kubernetes
+    spec:
+      containers:
+        - name: first-kubernetes
+          image: first-kubernetes:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+            - name: ASPNETCORE_URLS
+              value:
+                "http://+:8080"
+                # Configuration Redis
+            - name: Redis__ConnectionString
+              value: "redis-service:6379,password=myredispassword"
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+          # livenessProbe:
+          #   httpGet:
+          #     path: /health
+          #     port: 8080
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          # readinessProbe:
+          #   httpGet:
+          #     path: /health
+          #     port: 8080
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 5

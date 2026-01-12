@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: second-kubernetes-service
+spec:
+  type: NodePort # ← Accessible de l'extérieur
+  selector:
+    app: secondkubernetes
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 30081 # ← Port externe différent
