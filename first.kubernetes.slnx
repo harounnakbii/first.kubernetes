@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="first.kubernetes/first.kubernetes.csproj" />
+  <Project Path="SecondKubernetes/SecondKubernetes.csproj" />
+</Solution>

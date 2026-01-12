@@ -1,0 +1,11 @@
+@SecondKubernetes_HostAddress = http://localhost:5153
+
+GET {{SecondKubernetes_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{SecondKubernetes_HostAddress}}/todos/1
+Accept: application/json
+
+###
