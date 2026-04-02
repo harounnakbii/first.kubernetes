@@ -1,0 +1,894 @@
+{
+  "info": {
+    "_postman_id": "databricks-api-collection-2024",
+    "name": "Databricks API - Collection Complète",
+    "description": "Collection complète pour l'API Databricks REST 2.0/2.1.\n\n## Configuration initiale\n1. Dupliquer l'environnement `Databricks ENV`\n2. Renseigner `DATABRICKS_HOST` (ex: https://adb-xxxx.azuredatabricks.net)\n3. Choisir une méthode d'authentification :\n   - **PAT** : renseigner `DATABRICKS_PAT`\n   - **OAuth M2M** : renseigner `CLIENT_ID` + `CLIENT_SECRET`\n4. Lancer `Auth > Get OAuth Token` si OAuth M2M\n\n## Méthodes d'auth supportées\n- Personal Access Token (PAT)\n- OAuth 2.0 Machine-to-Machine (M2M)\n- Azure AD Token (Azure Databricks)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "DATABRICKS_HOST", "value": "https://YOUR-WORKSPACE.azuredatabricks.net", "type": "string" },
+    { "key": "DATABRICKS_PAT", "value": "dapi...", "type": "string" },
+    { "key": "CLIENT_ID", "value": "", "type": "string" },
+    { "key": "CLIENT_SECRET", "value": "", "type": "string" },
+    { "key": "AZURE_TENANT_ID", "value": "", "type": "string" },
+    { "key": "ACCESS_TOKEN", "value": "", "type": "string" },
+    { "key": "CLUSTER_ID", "value": "", "type": "string" },
+    { "key": "JOB_ID", "value": "", "type": "string" },
+    { "key": "RUN_ID", "value": "", "type": "string" },
+    { "key": "NOTEBOOK_PATH", "value": "/Users/user@company.com/MyNotebook", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth - Authentification",
+      "item": [
+        {
+          "name": "GET OAuth Token (M2M - Databricks Account)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('ACCESS_TOKEN', jsonData.access_token);",
+                  "    console.log('✅ Token OAuth M2M stocké avec succès');",
+                  "    console.log('Expires in:', jsonData.expires_in, 'secondes');",
+                  "} else {",
+                  "    console.error('❌ Erreur récupération token:', JSON.stringify(jsonData));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials" },
+                { "key": "client_id", "value": "{{CLIENT_ID}}" },
+                { "key": "client_secret", "value": "{{CLIENT_SECRET}}" },
+                { "key": "scope", "value": "all-apis" }
+              ]
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/oidc/v1/token",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["oidc", "v1", "token"]
+            },
+            "description": "Récupère un token OAuth 2.0 M2M (Machine-to-Machine) via les credentials d'un Service Principal Databricks.\n\n**Prérequis :**\n- Créer un Service Principal dans Settings > Identity & Access > Service Principals\n- Générer un Client ID et Client Secret\n- Assigner les permissions nécessaires au SP\n\nLe token est automatiquement sauvegardé dans la variable `ACCESS_TOKEN`."
+          }
+        },
+        {
+          "name": "GET Azure AD Token (Azure Databricks)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('ACCESS_TOKEN', jsonData.access_token);",
+                  "    console.log('✅ Azure AD Token stocké avec succès');",
+                  "} else {",
+                  "    console.error('❌ Erreur:', JSON.stringify(jsonData));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials" },
+                { "key": "client_id", "value": "{{CLIENT_ID}}" },
+                { "key": "client_secret", "value": "{{CLIENT_SECRET}}" },
+                { "key": "resource", "value": "2ff814a6-3304-4ab8-85cb-cd0e6f879c1d" }
+              ]
+            },
+            "url": {
+              "raw": "https://login.microsoftonline.com/{{AZURE_TENANT_ID}}/oauth2/token",
+              "protocol": "https",
+              "host": ["login", "microsoftonline", "com"],
+              "path": ["{{AZURE_TENANT_ID}}", "oauth2", "token"]
+            },
+            "description": "Récupère un token Azure Active Directory pour Azure Databricks.\n\n**Prérequis :**\n- App Registration Azure AD avec les permissions Databricks\n- `AZURE_TENANT_ID` = ID du tenant Azure\n- `CLIENT_ID` = Application (client) ID\n- `CLIENT_SECRET` = Client secret de l'app\n\nLa ressource `2ff814a6...` est l'ID fixe de l'API Azure Databricks."
+          }
+        },
+        {
+          "name": "Test Auth - Valider le token courant",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{ACCESS_TOKEN}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/token/list",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "token", "list"]
+            },
+            "description": "Valide que le token courant fonctionne en listant les tokens PAT de l'utilisateur."
+          }
+        },
+        {
+          "name": "CREATE Personal Access Token (PAT)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Token généré via API - Postman\",\n  \"lifetime_seconds\": 7776000\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/token/create",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "token", "create"]
+            },
+            "description": "Crée un nouveau Personal Access Token (PAT).\n\n- `lifetime_seconds`: Durée de vie (7776000 = 90 jours, 0 = pas d'expiration)\n- `comment`: Description du token\n\n⚠️ Sauvegarder le `token_value` retourné - il ne sera plus accessible ensuite."
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Clusters",
+      "item": [
+        {
+          "name": "LIST Clusters",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/clusters/list",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "clusters", "list"]
+            },
+            "description": "Retourne la liste de tous les clusters du workspace."
+          }
+        },
+        {
+          "name": "GET Cluster Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/clusters/get?cluster_id={{CLUSTER_ID}}",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "clusters", "get"],
+              "query": [{ "key": "cluster_id", "value": "{{CLUSTER_ID}}" }]
+            },
+            "description": "Retourne les détails d'un cluster spécifique (état, config, ressources)."
+          }
+        },
+        {
+          "name": "CREATE Cluster",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.cluster_id) {",
+                  "    pm.collectionVariables.set('CLUSTER_ID', jsonData.cluster_id);",
+                  "    console.log('✅ Cluster ID sauvegardé:', jsonData.cluster_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cluster_name\": \"my-cluster-postman\",\n  \"spark_version\": \"13.3.x-scala2.12\",\n  \"node_type_id\": \"Standard_DS3_v2\",\n  \"autotermination_minutes\": 30,\n  \"num_workers\": 2,\n  \"spark_conf\": {\n    \"spark.databricks.delta.preview.enabled\": \"true\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/clusters/create",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "clusters", "create"]
+            },
+            "description": "Crée un nouveau cluster interactif.\n\nModifier `node_type_id` selon votre cloud :\n- **Azure**: `Standard_DS3_v2`\n- **AWS**: `i3.xlarge`\n- **GCP**: `n1-standard-4`"
+          }
+        },
+        {
+          "name": "START Cluster",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cluster_id\": \"{{CLUSTER_ID}}\"\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/clusters/start",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "clusters", "start"]
+            }
+          }
+        },
+        {
+          "name": "TERMINATE Cluster",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cluster_id\": \"{{CLUSTER_ID}}\"\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/clusters/delete",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "clusters", "delete"]
+            }
+          }
+        },
+        {
+          "name": "LIST Node Types",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/clusters/list-node-types",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "clusters", "list-node-types"]
+            }
+          }
+        },
+        {
+          "name": "LIST Spark Versions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/clusters/spark-versions",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "clusters", "spark-versions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💼 Jobs",
+      "item": [
+        {
+          "name": "LIST Jobs",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.1/jobs/list?limit=25&expand_tasks=true",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.1", "jobs", "list"],
+              "query": [
+                { "key": "limit", "value": "25" },
+                { "key": "expand_tasks", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Job Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.1/jobs/get?job_id={{JOB_ID}}",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.1", "jobs", "get"],
+              "query": [{ "key": "job_id", "value": "{{JOB_ID}}" }]
+            }
+          }
+        },
+        {
+          "name": "CREATE Job (Notebook)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.job_id) {",
+                  "    pm.collectionVariables.set('JOB_ID', String(jsonData.job_id));",
+                  "    console.log('✅ Job ID sauvegardé:', jsonData.job_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mon Job Notebook - Postman\",\n  \"tasks\": [\n    {\n      \"task_key\": \"notebook_task_1\",\n      \"description\": \"Exécution du notebook principal\",\n      \"notebook_task\": {\n        \"notebook_path\": \"{{NOTEBOOK_PATH}}\",\n        \"base_parameters\": {\n          \"env\": \"production\",\n          \"date\": \"{{$isoTimestamp}}\"\n        }\n      },\n      \"job_cluster_key\": \"job_cluster\",\n      \"timeout_seconds\": 3600\n    }\n  ],\n  \"job_clusters\": [\n    {\n      \"job_cluster_key\": \"job_cluster\",\n      \"new_cluster\": {\n        \"spark_version\": \"13.3.x-scala2.12\",\n        \"node_type_id\": \"Standard_DS3_v2\",\n        \"num_workers\": 2\n      }\n    }\n  ],\n  \"schedule\": {\n    \"quartz_cron_expression\": \"0 0 8 * * ?\",\n    \"timezone_id\": \"Europe/Paris\",\n    \"pause_status\": \"PAUSED\"\n  },\n  \"max_retries\": 1,\n  \"timeout_seconds\": 7200\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.1/jobs/create",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.1", "jobs", "create"]
+            },
+            "description": "Crée un job exécutant un notebook avec un cluster éphémère.\n\nLe planning CRON est mis en pause par défaut (`PAUSED`). Changer en `UNPAUSED` pour activer."
+          }
+        },
+        {
+          "name": "RUN Job Now",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.run_id) {",
+                  "    pm.collectionVariables.set('RUN_ID', String(jsonData.run_id));",
+                  "    console.log('✅ Run ID sauvegardé:', jsonData.run_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_id\": {{JOB_ID}},\n  \"notebook_params\": {\n    \"env\": \"dev\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.1/jobs/run-now",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.1", "jobs", "run-now"]
+            }
+          }
+        },
+        {
+          "name": "GET Run Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.1/jobs/runs/get?run_id={{RUN_ID}}",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.1", "jobs", "runs", "get"],
+              "query": [{ "key": "run_id", "value": "{{RUN_ID}}" }]
+            }
+          }
+        },
+        {
+          "name": "LIST Job Runs",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.1/jobs/runs/list?job_id={{JOB_ID}}&limit=10",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.1", "jobs", "runs", "list"],
+              "query": [
+                { "key": "job_id", "value": "{{JOB_ID}}" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "CANCEL Run",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"run_id\": {{RUN_ID}}\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.1/jobs/runs/cancel",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.1", "jobs", "runs", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Job",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_id\": {{JOB_ID}}\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.1/jobs/delete",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.1", "jobs", "delete"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📓 Notebooks & Workspace",
+      "item": [
+        {
+          "name": "LIST Workspace",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/workspace/list?path=/",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "workspace", "list"],
+              "query": [{ "key": "path", "value": "/" }]
+            }
+          }
+        },
+        {
+          "name": "GET Notebook Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/workspace/get-status?path={{NOTEBOOK_PATH}}",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "workspace", "get-status"],
+              "query": [{ "key": "path", "value": "{{NOTEBOOK_PATH}}" }]
+            }
+          }
+        },
+        {
+          "name": "EXPORT Notebook (HTML)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/workspace/export?path={{NOTEBOOK_PATH}}&format=HTML",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "workspace", "export"],
+              "query": [
+                { "key": "path", "value": "{{NOTEBOOK_PATH}}" },
+                { "key": "format", "value": "HTML" }
+              ]
+            },
+            "description": "Exporte un notebook. Formats disponibles : SOURCE, HTML, JUPYTER, DBC, R_MARKDOWN."
+          }
+        },
+        {
+          "name": "CREATE Directory",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"path\": \"/Shared/PostmanTests\"\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/workspace/mkdirs",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "workspace", "mkdirs"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Workspace Object",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"path\": \"/Shared/PostmanTests\",\n  \"recursive\": true\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/workspace/delete",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "workspace", "delete"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🗄️ DBFS - Databricks File System",
+      "item": [
+        {
+          "name": "LIST DBFS",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/dbfs/list?path=/",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "dbfs", "list"],
+              "query": [{ "key": "path", "value": "/" }]
+            }
+          }
+        },
+        {
+          "name": "GET DBFS File Info",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/dbfs/get-status?path=/FileStore",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "dbfs", "get-status"],
+              "query": [{ "key": "path", "value": "/FileStore" }]
+            }
+          }
+        },
+        {
+          "name": "CREATE DBFS Directory",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"path\": \"/FileStore/postman-tests\"\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/dbfs/mkdirs",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "dbfs", "mkdirs"]
+            }
+          }
+        },
+        {
+          "name": "DELETE DBFS File",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"path\": \"/FileStore/postman-tests\",\n  \"recursive\": true\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/dbfs/delete",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "dbfs", "delete"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔑 Secrets",
+      "item": [
+        {
+          "name": "LIST Secret Scopes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/secrets/scopes/list",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "secrets", "scopes", "list"]
+            }
+          }
+        },
+        {
+          "name": "CREATE Secret Scope",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scope\": \"my-secrets-scope\",\n  \"initial_manage_principal\": \"users\"\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/secrets/scopes/create",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "secrets", "scopes", "create"]
+            }
+          }
+        },
+        {
+          "name": "PUT Secret",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scope\": \"my-secrets-scope\",\n  \"key\": \"my-api-key\",\n  \"string_value\": \"ma-valeur-secrete\"\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/secrets/put",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "secrets", "put"]
+            }
+          }
+        },
+        {
+          "name": "LIST Secrets in Scope",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/secrets/list?scope=my-secrets-scope",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "secrets", "list"],
+              "query": [{ "key": "scope", "value": "my-secrets-scope" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Users & Groups (SCIM)",
+      "item": [
+        {
+          "name": "LIST Users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/preview/scim/v2/Users?count=20",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "preview", "scim", "v2", "Users"],
+              "query": [{ "key": "count", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "LIST Groups",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/preview/scim/v2/Groups",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "preview", "scim", "v2", "Groups"]
+            }
+          }
+        },
+        {
+          "name": "LIST Service Principals",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/preview/scim/v2/ServicePrincipals",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "preview", "scim", "v2", "ServicePrincipals"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 SQL / Warehouses",
+      "item": [
+        {
+          "name": "LIST SQL Warehouses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/sql/warehouses",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "sql", "warehouses"]
+            }
+          }
+        },
+        {
+          "name": "EXECUTE SQL Statement",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statement\": \"SELECT current_timestamp() as now, current_user() as user\",\n  \"warehouse_id\": \"YOUR_WAREHOUSE_ID\",\n  \"wait_timeout\": \"30s\",\n  \"on_wait_timeout\": \"CONTINUE\"\n}"
+            },
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/sql/statements",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "sql", "statements"]
+            },
+            "description": "Exécute une requête SQL via le SQL Warehouse.\n\nRemplacer `YOUR_WAREHOUSE_ID` par l'ID obtenu depuis LIST SQL Warehouses."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Workspace Info",
+      "item": [
+        {
+          "name": "GET Workspace Config",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/workspace-conf?keys=enableIpAccessLists,enableTokensConfig",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "workspace-conf"],
+              "query": [{ "key": "keys", "value": "enableIpAccessLists,enableTokensConfig" }]
+            }
+          }
+        },
+        {
+          "name": "LIST Policies (Cluster Policies)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/policies/clusters/list",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "policies", "clusters", "list"]
+            }
+          }
+        },
+        {
+          "name": "LIST Instance Pools",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{DATABRICKS_PAT}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{DATABRICKS_HOST}}/api/2.0/instance-pools/list",
+              "host": ["{{DATABRICKS_HOST}}"],
+              "path": ["api", "2.0", "instance-pools", "list"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
