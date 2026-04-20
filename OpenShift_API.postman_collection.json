@@ -1,0 +1,3860 @@
+{
+  "info": {
+    "_postman_id": "6be1a8fa-91f0-4ce6-bbea-b8902b085dd3",
+    "name": "OpenShift REST API — Complete Collection",
+    "description": "Complete Postman collection for the OpenShift REST API.\n\n## Setup\n1. Set `oc_api_url` to your cluster API URL: `https://api.<cluster>.<domain>:6443`\n2. Set `oc_token` by running: `oc whoami -t`\n3. Set `namespace` to your target project\n4. In Postman Settings > turn off SSL certificate verification (for self-signed certs)\n\n## Token\nAfter `oc login`, get your token:\n```\noc whoami -t\n```\nPaste it in the `oc_token` variable.\n\n## Notes\n- port-forward and exec require oc/kubectl binary — not available via REST\n- All secret values are base64 encoded\n- OpenShift-specific resources use `apis/route.openshift.io`, `apis/apps.openshift.io`, etc.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "oc_api_url",
+      "value": "https://api.<cluster>.<domain>:6443",
+      "type": "default"
+    },
+    {
+      "key": "oc_token",
+      "value": "",
+      "type": "secret",
+      "description": "Bearer token — run: oc whoami -t"
+    },
+    {
+      "key": "namespace",
+      "value": "production",
+      "type": "default"
+    },
+    {
+      "key": "pod_name",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "service_name",
+      "value": "mssql-service",
+      "type": "default"
+    },
+    {
+      "key": "secret_name",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "deployment_name",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "route_name",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "dc_name",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "build_config",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "image_stream",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "node_name",
+      "value": "",
+      "type": "default"
+    },
+    {
+      "key": "app_name",
+      "value": "my-app",
+      "type": "default"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{oc_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication & Token",
+      "description": "Get and verify your OpenShift token",
+      "item": [
+        {
+          "name": "Get API Info (no auth)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Check cluster reachability — no token required"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Token (whoami)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/user.openshift.io/v1/users/~",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "user.openshift.io",
+                "v1",
+                "users",
+                "~"
+              ]
+            },
+            "description": "Returns the current authenticated user — equivalent to oc whoami"
+          },
+          "response": []
+        },
+        {
+          "name": "List OAuth Access Tokens",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/oauth.openshift.io/v1/oauthaccesstokens",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "oauth.openshift.io",
+                "v1",
+                "oauthaccesstokens"
+              ]
+            },
+            "description": "List all OAuth tokens (requires cluster-admin)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get OpenAPI Spec",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/openapi/v2",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "openapi",
+                "v2"
+              ]
+            },
+            "description": "Full Swagger/OpenAPI specification of all endpoints"
+          },
+          "response": []
+        },
+        {
+          "name": "List All API Groups",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis"
+              ]
+            },
+            "description": "All API groups available on the cluster"
+          },
+          "response": []
+        },
+        {
+          "name": "List Core API Resources (v1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1"
+              ]
+            },
+            "description": "Core resources: pods, services, secrets, configmaps, namespaces..."
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "📁 Projects (Namespaces)",
+      "description": "Manage OpenShift projects",
+      "item": [
+        {
+          "name": "List All Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/project.openshift.io/v1/projects",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "project.openshift.io",
+                "v1",
+                "projects"
+              ]
+            },
+            "description": "List all projects accessible to the current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Project",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/project.openshift.io/v1/projects/{{namespace}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "project.openshift.io",
+                "v1",
+                "projects",
+                "{{namespace}}"
+              ]
+            },
+            "description": "Get details of a specific project"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/project.openshift.io/v1/projectrequests",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "project.openshift.io",
+                "v1",
+                "projectrequests"
+              ]
+            },
+            "description": "Create a new OpenShift project",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiVersion\": \"project.openshift.io/v1\",\n  \"kind\": \"ProjectRequest\",\n  \"metadata\": {\n    \"name\": \"{{namespace}}\"\n  },\n  \"displayName\": \"My Project\",\n  \"description\": \"Created via Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/project.openshift.io/v1/projects/{{namespace}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "project.openshift.io",
+                "v1",
+                "projects",
+                "{{namespace}}"
+              ]
+            },
+            "description": "Delete a project and all its resources — IRREVERSIBLE"
+          },
+          "response": []
+        },
+        {
+          "name": "List Namespaces (K8s)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces"
+              ]
+            },
+            "description": "Standard Kubernetes namespace list"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Namespace",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}"
+              ]
+            },
+            "description": "Get a specific namespace"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "☸ Pods",
+      "description": "List, inspect and manage pods",
+      "item": [
+        {
+          "name": "List All Pods (all namespaces)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/pods",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pods"
+              ]
+            },
+            "description": "List pods across all namespaces"
+          },
+          "response": []
+        },
+        {
+          "name": "List Pods in Namespace",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods"
+              ]
+            },
+            "description": "List all pods in the active namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "List Pods by Label",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods?labelSelector=app%3D{{app_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods?labelSelector=app%3D{{app_name}}"
+              ]
+            },
+            "description": "Filter pods by label — e.g. app=my-app"
+          },
+          "response": []
+        },
+        {
+          "name": "List Running Pods",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods?fieldSelector=status.phase%3DRunning",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods?fieldSelector=status.phase%3DRunning"
+              ]
+            },
+            "description": "Filter only Running pods"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pod",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}"
+              ]
+            },
+            "description": "Get full YAML/JSON of a specific pod"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pod Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}/status",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}",
+                "status"
+              ]
+            },
+            "description": "Get only the status subresource of a pod"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pod Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}/log",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}",
+                "log"
+              ]
+            },
+            "description": "Stream or get logs from a pod"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pod Logs (tail 100)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}/log?tailLines=100",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}",
+                "log?tailLines=100"
+              ]
+            },
+            "description": "Get last 100 lines of pod logs"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pod Logs (since 1h)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}/log?sinceSeconds=3600",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}",
+                "log?sinceSeconds=3600"
+              ]
+            },
+            "description": "Get pod logs from the last hour"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Pod",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}"
+              ]
+            },
+            "description": "Delete a pod — will be recreated if managed by a Deployment"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Pod (force)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}?gracePeriodSeconds=0",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}?gracePeriodSeconds=0"
+              ]
+            },
+            "description": "Immediately force-delete a pod"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🚀 Deployments",
+      "description": "Manage Kubernetes Deployments",
+      "item": [
+        {
+          "name": "List Deployments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/deployments",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deployments"
+              ]
+            },
+            "description": "List all Deployments in the namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Deployment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/deployments/{{deployment_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deployments",
+                "{{deployment_name}}"
+              ]
+            },
+            "description": "Get a specific Deployment"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Deployment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/deployments",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deployments"
+              ]
+            },
+            "description": "Create a new Deployment",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiVersion\": \"apps/v1\",\n  \"kind\": \"Deployment\",\n  \"metadata\": {\n    \"name\": \"{{app_name}}\",\n    \"namespace\": \"{{namespace}}\"\n  },\n  \"spec\": {\n    \"replicas\": 3,\n    \"selector\": {\n      \"matchLabels\": {\n        \"app\": \"{{app_name}}\"\n      }\n    },\n    \"template\": {\n      \"metadata\": {\n        \"labels\": {\n          \"app\": \"{{app_name}}\"\n        }\n      },\n      \"spec\": {\n        \"containers\": [\n          {\n            \"name\": \"{{app_name}}\",\n            \"image\": \"registry.example.com/{{app_name}}:latest\",\n            \"ports\": [\n              {\n                \"containerPort\": 8080\n              }\n            ],\n            \"resources\": {\n              \"requests\": {\n                \"cpu\": \"250m\",\n                \"memory\": \"256Mi\"\n              },\n              \"limits\": {\n                \"cpu\": \"500m\",\n                \"memory\": \"512Mi\"\n              }\n            }\n          }\n        ]\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Scale Deployment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/merge-patch+json"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/deployments/{{deployment_name}}/scale",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deployments",
+                "{{deployment_name}}",
+                "scale"
+              ]
+            },
+            "description": "Scale a deployment to N replicas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"spec\": {\n    \"replicas\": 3\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Image (patch)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/strategic-merge-patch+json"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/deployments/{{deployment_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deployments",
+                "{{deployment_name}}"
+              ]
+            },
+            "description": "Update the container image via strategic merge patch",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"spec\": {\n    \"template\": {\n      \"spec\": {\n        \"containers\": [\n          {\n            \"name\": \"{{app_name}}\",\n            \"image\": \"registry.example.com/{{app_name}}:1.2.0\"\n          }\n        ]\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rolling Restart",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/strategic-merge-patch+json"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/deployments/{{deployment_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deployments",
+                "{{deployment_name}}"
+              ]
+            },
+            "description": "Trigger a rolling restart by updating an annotation",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"spec\": {\n    \"template\": {\n      \"metadata\": {\n        \"annotations\": {\n          \"kubectl.kubernetes.io/restartedAt\": \"2024-01-01T00:00:00Z\"\n        }\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Rollout Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/deployments/{{deployment_name}}/status",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deployments",
+                "{{deployment_name}}",
+                "status"
+              ]
+            },
+            "description": "Check the rollout status of a deployment"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Deployment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/deployments/{{deployment_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deployments",
+                "{{deployment_name}}"
+              ]
+            },
+            "description": "Delete a deployment"
+          },
+          "response": []
+        },
+        {
+          "name": "List ReplicaSets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps/v1/namespaces/{{namespace}}/replicasets",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "replicasets"
+              ]
+            },
+            "description": "List ReplicaSets (rollout history)"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🔴 DeploymentConfigs (OpenShift)",
+      "description": "OpenShift-specific DeploymentConfig resources",
+      "item": [
+        {
+          "name": "List DeploymentConfigs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps.openshift.io/v1/namespaces/{{namespace}}/deploymentconfigs",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deploymentconfigs"
+              ]
+            },
+            "description": "List all DeploymentConfigs in the namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "Get DeploymentConfig",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps.openshift.io/v1/namespaces/{{namespace}}/deploymentconfigs/{{dc_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deploymentconfigs",
+                "{{dc_name}}"
+              ]
+            },
+            "description": "Get a specific DeploymentConfig"
+          },
+          "response": []
+        },
+        {
+          "name": "Scale DeploymentConfig",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/merge-patch+json"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps.openshift.io/v1/namespaces/{{namespace}}/deploymentconfigs/{{dc_name}}/scale",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deploymentconfigs",
+                "{{dc_name}}",
+                "scale"
+              ]
+            },
+            "description": "Scale a DeploymentConfig",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"spec\": {\n    \"replicas\": 3\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Trigger Rollout (instantiate)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps.openshift.io/v1/namespaces/{{namespace}}/deploymentconfigs/{{dc_name}}/instantiate",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deploymentconfigs",
+                "{{dc_name}}",
+                "instantiate"
+              ]
+            },
+            "description": "Trigger a new deployment rollout",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"DeploymentRequest\",\n  \"apiVersion\": \"apps.openshift.io/v1\",\n  \"name\": \"{{dc_name}}\",\n  \"latest\": true,\n  \"force\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Deployment Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps.openshift.io/v1/namespaces/{{namespace}}/deploymentconfigs/{{dc_name}}/log",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deploymentconfigs",
+                "{{dc_name}}",
+                "log"
+              ]
+            },
+            "description": "Get logs from the latest DeploymentConfig rollout"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete DeploymentConfig",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/apps.openshift.io/v1/namespaces/{{namespace}}/deploymentconfigs/{{dc_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "apps.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "deploymentconfigs",
+                "{{dc_name}}"
+              ]
+            },
+            "description": "Delete a DeploymentConfig"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🔀 Services",
+      "description": "Manage Kubernetes Services",
+      "item": [
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/services",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "services"
+              ]
+            },
+            "description": "List all services in the namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Service",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/services/{{service_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "services",
+                "{{service_name}}"
+              ]
+            },
+            "description": "Get a specific service"
+          },
+          "response": []
+        },
+        {
+          "name": "Get SQL Server Service",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/services/{{service_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "services",
+                "{{service_name}}"
+              ]
+            },
+            "description": "Get the SQL Server service details — check port 1433"
+          },
+          "response": []
+        },
+        {
+          "name": "Create ClusterIP Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/services",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "services"
+              ]
+            },
+            "description": "Create a ClusterIP service",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiVersion\": \"v1\",\n  \"kind\": \"Service\",\n  \"metadata\": {\n    \"name\": \"{{app_name}}-svc\",\n    \"namespace\": \"{{namespace}}\"\n  },\n  \"spec\": {\n    \"selector\": {\n      \"app\": \"{{app_name}}\"\n    },\n    \"ports\": [\n      {\n        \"name\": \"http\",\n        \"port\": 80,\n        \"targetPort\": 8080\n      }\n    ],\n    \"type\": \"ClusterIP\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create SQL Server Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/services",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "services"
+              ]
+            },
+            "description": "Create a service exposing SQL Server port 1433",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiVersion\": \"v1\",\n  \"kind\": \"Service\",\n  \"metadata\": {\n    \"name\": \"mssql-svc\",\n    \"namespace\": \"{{namespace}}\"\n  },\n  \"spec\": {\n    \"selector\": {\n      \"app\": \"mssql\"\n    },\n    \"ports\": [\n      {\n        \"name\": \"mssql\",\n        \"port\": 1433,\n        \"targetPort\": 1433,\n        \"protocol\": \"TCP\"\n      }\n    ],\n    \"type\": \"ClusterIP\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/services/{{service_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "services",
+                "{{service_name}}"
+              ]
+            },
+            "description": "Delete a service"
+          },
+          "response": []
+        },
+        {
+          "name": "List Endpoints",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/endpoints",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "endpoints"
+              ]
+            },
+            "description": "List all endpoints — shows which pods are backing each service"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Service Endpoints",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/endpoints/{{service_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "endpoints",
+                "{{service_name}}"
+              ]
+            },
+            "description": "Get endpoints for a specific service"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🌐 Routes (OpenShift)",
+      "description": "OpenShift Routes — equivalent to Ingress",
+      "item": [
+        {
+          "name": "List Routes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/route.openshift.io/v1/namespaces/{{namespace}}/routes",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "route.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "routes"
+              ]
+            },
+            "description": "List all routes in the namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "List Routes (all namespaces)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/route.openshift.io/v1/routes",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "route.openshift.io",
+                "v1",
+                "routes"
+              ]
+            },
+            "description": "List routes across all namespaces"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Route",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/route.openshift.io/v1/namespaces/{{namespace}}/routes/{{route_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "route.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "routes",
+                "{{route_name}}"
+              ]
+            },
+            "description": "Get a specific route"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Route (HTTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/route.openshift.io/v1/namespaces/{{namespace}}/routes",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "route.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "routes"
+              ]
+            },
+            "description": "Create a plain HTTP route",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiVersion\": \"route.openshift.io/v1\",\n  \"kind\": \"Route\",\n  \"metadata\": {\n    \"name\": \"{{app_name}}-route\",\n    \"namespace\": \"{{namespace}}\"\n  },\n  \"spec\": {\n    \"host\": \"{{app_name}}.apps.<cluster>.<domain>\",\n    \"to\": {\n      \"kind\": \"Service\",\n      \"name\": \"{{app_name}}-svc\",\n      \"weight\": 100\n    },\n    \"port\": {\n      \"targetPort\": \"http\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Route (TLS edge)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/route.openshift.io/v1/namespaces/{{namespace}}/routes",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "route.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "routes"
+              ]
+            },
+            "description": "Create a TLS edge-terminated route",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiVersion\": \"route.openshift.io/v1\",\n  \"kind\": \"Route\",\n  \"metadata\": {\n    \"name\": \"{{app_name}}-tls\",\n    \"namespace\": \"{{namespace}}\"\n  },\n  \"spec\": {\n    \"host\": \"{{app_name}}.apps.<cluster>.<domain>\",\n    \"to\": {\n      \"kind\": \"Service\",\n      \"name\": \"{{app_name}}-svc\",\n      \"weight\": 100\n    },\n    \"port\": {\n      \"targetPort\": \"http\"\n    },\n    \"tls\": {\n      \"termination\": \"edge\",\n      \"insecureEdgeTerminationPolicy\": \"Redirect\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Route",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/route.openshift.io/v1/namespaces/{{namespace}}/routes/{{route_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "route.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "routes",
+                "{{route_name}}"
+              ]
+            },
+            "description": "Delete a route"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🔒 Secrets",
+      "description": "Read and manage Kubernetes Secrets",
+      "item": [
+        {
+          "name": "List Secrets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/secrets",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "secrets"
+              ]
+            },
+            "description": "List all secrets in the namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Secret",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/secrets/{{secret_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "secrets",
+                "{{secret_name}}"
+              ]
+            },
+            "description": "Get a secret — values are base64 encoded"
+          },
+          "response": []
+        },
+        {
+          "name": "Get SQL Server Secret",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/secrets/{{secret_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "secrets",
+                "{{secret_name}}"
+              ]
+            },
+            "description": "Get the SQL Server secret — look for SA_PASSWORD key"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Opaque Secret",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/secrets",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "secrets"
+              ]
+            },
+            "description": "Create a generic secret — values must be base64 encoded",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiVersion\": \"v1\",\n  \"kind\": \"Secret\",\n  \"metadata\": {\n    \"name\": \"app-secrets\",\n    \"namespace\": \"{{namespace}}\"\n  },\n  \"type\": \"Opaque\",\n  \"data\": {\n    \"SA_PASSWORD\": \"U3VwZXJTZWNyZXQhMjAyNA==\",\n    \"db-user\": \"c2E=\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Secret",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/secrets/{{secret_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "secrets",
+                "{{secret_name}}"
+              ]
+            },
+            "description": "Delete a secret"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "⚙ ConfigMaps",
+      "description": "Manage ConfigMaps",
+      "item": [
+        {
+          "name": "List ConfigMaps",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/configmaps",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "configmaps"
+              ]
+            },
+            "description": "List all configmaps"
+          },
+          "response": []
+        },
+        {
+          "name": "Get ConfigMap",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/configmaps/{{app_name}}-config",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "configmaps",
+                "{{app_name}}-config"
+              ]
+            },
+            "description": "Get a configmap"
+          },
+          "response": []
+        },
+        {
+          "name": "Create ConfigMap",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/configmaps",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "configmaps"
+              ]
+            },
+            "description": "Create a configmap",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiVersion\": \"v1\",\n  \"kind\": \"ConfigMap\",\n  \"metadata\": {\n    \"name\": \"{{app_name}}-config\",\n    \"namespace\": \"{{namespace}}\"\n  },\n  \"data\": {\n    \"APP_ENV\": \"production\",\n    \"LOG_LEVEL\": \"info\",\n    \"DB_HOST\": \"mssql-svc\",\n    \"DB_PORT\": \"1433\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete ConfigMap",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/configmaps/{{app_name}}-config",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "configmaps",
+                "{{app_name}}-config"
+              ]
+            },
+            "description": "Delete a configmap"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🏗 Builds (OpenShift)",
+      "description": "OpenShift Build and BuildConfig resources",
+      "item": [
+        {
+          "name": "List BuildConfigs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/build.openshift.io/v1/namespaces/{{namespace}}/buildconfigs",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "build.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "buildconfigs"
+              ]
+            },
+            "description": "List all BuildConfigs"
+          },
+          "response": []
+        },
+        {
+          "name": "Get BuildConfig",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/build.openshift.io/v1/namespaces/{{namespace}}/buildconfigs/{{build_config}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "build.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "buildconfigs",
+                "{{build_config}}"
+              ]
+            },
+            "description": "Get a specific BuildConfig"
+          },
+          "response": []
+        },
+        {
+          "name": "Trigger Build (instantiate)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/build.openshift.io/v1/namespaces/{{namespace}}/buildconfigs/{{build_config}}/instantiate",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "build.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "buildconfigs",
+                "{{build_config}}",
+                "instantiate"
+              ]
+            },
+            "description": "Trigger a new build from a BuildConfig",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"BuildRequest\",\n  \"apiVersion\": \"build.openshift.io/v1\",\n  \"metadata\": {\n    \"name\": \"{{build_config}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Builds",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/build.openshift.io/v1/namespaces/{{namespace}}/builds",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "build.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "builds"
+              ]
+            },
+            "description": "List all builds in the namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Build Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/build.openshift.io/v1/namespaces/{{namespace}}/builds/{{build_config}}-1/log",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "build.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "builds",
+                "{{build_config}}-1",
+                "log"
+              ]
+            },
+            "description": "Get logs for a specific build"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Build",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/strategic-merge-patch+json"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/build.openshift.io/v1/namespaces/{{namespace}}/builds/{{build_config}}-1",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "build.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "builds",
+                "{{build_config}}-1"
+              ]
+            },
+            "description": "Cancel a running build",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": {\n    \"cancelled\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🖼 ImageStreams (OpenShift)",
+      "description": "Manage OpenShift ImageStreams",
+      "item": [
+        {
+          "name": "List ImageStreams",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/image.openshift.io/v1/namespaces/{{namespace}}/imagestreams",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "image.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "imagestreams"
+              ]
+            },
+            "description": "List all ImageStreams"
+          },
+          "response": []
+        },
+        {
+          "name": "Get ImageStream",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/image.openshift.io/v1/namespaces/{{namespace}}/imagestreams/{{image_stream}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "image.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "imagestreams",
+                "{{image_stream}}"
+              ]
+            },
+            "description": "Get a specific ImageStream"
+          },
+          "response": []
+        },
+        {
+          "name": "List ImageStreamTags",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/image.openshift.io/v1/namespaces/{{namespace}}/imagestreamtags",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "image.openshift.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "imagestreamtags"
+              ]
+            },
+            "description": "List all ImageStream tags"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🖥 Nodes",
+      "description": "Inspect cluster nodes",
+      "item": [
+        {
+          "name": "List Nodes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/nodes",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "nodes"
+              ]
+            },
+            "description": "List all nodes in the cluster"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Node",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/nodes/{{node_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "nodes",
+                "{{node_name}}"
+              ]
+            },
+            "description": "Get details of a specific node"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Node Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/nodes/{{node_name}}/status",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "nodes",
+                "{{node_name}}",
+                "status"
+              ]
+            },
+            "description": "Get node status (capacity, allocatable, conditions)"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "👤 RBAC",
+      "description": "Manage roles and bindings",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/rbac.authorization.k8s.io/v1/namespaces/{{namespace}}/roles",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "rbac.authorization.k8s.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "roles"
+              ]
+            },
+            "description": "List all Roles in namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "List RoleBindings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/rbac.authorization.k8s.io/v1/namespaces/{{namespace}}/rolebindings",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "rbac.authorization.k8s.io",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "rolebindings"
+              ]
+            },
+            "description": "List all RoleBindings"
+          },
+          "response": []
+        },
+        {
+          "name": "List ClusterRoles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/rbac.authorization.k8s.io/v1/clusterroles",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "rbac.authorization.k8s.io",
+                "v1",
+                "clusterroles"
+              ]
+            },
+            "description": "List all ClusterRoles"
+          },
+          "response": []
+        },
+        {
+          "name": "List ServiceAccounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/serviceaccounts",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "serviceaccounts"
+              ]
+            },
+            "description": "List all ServiceAccounts"
+          },
+          "response": []
+        },
+        {
+          "name": "Get ServiceAccount",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/serviceaccounts/default",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "serviceaccounts",
+                "default"
+              ]
+            },
+            "description": "Get the default ServiceAccount"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "📈 HPA & Storage",
+      "description": "Autoscaling and storage resources",
+      "item": [
+        {
+          "name": "List HPAs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/autoscaling/v2/namespaces/{{namespace}}/horizontalpodautoscalers",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "autoscaling",
+                "v2",
+                "namespaces",
+                "{{namespace}}",
+                "horizontalpodautoscalers"
+              ]
+            },
+            "description": "List Horizontal Pod Autoscalers"
+          },
+          "response": []
+        },
+        {
+          "name": "List PVCs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/persistentvolumeclaims",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "persistentvolumeclaims"
+              ]
+            },
+            "description": "List PersistentVolumeClaims"
+          },
+          "response": []
+        },
+        {
+          "name": "List PVs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/persistentvolumes",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "persistentvolumes"
+              ]
+            },
+            "description": "List all PersistentVolumes (cluster-wide)"
+          },
+          "response": []
+        },
+        {
+          "name": "List StorageClasses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/apis/storage.k8s.io/v1/storageclasses",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "apis",
+                "storage.k8s.io",
+                "v1",
+                "storageclasses"
+              ]
+            },
+            "description": "List StorageClasses"
+          },
+          "response": []
+        },
+        {
+          "name": "List Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/events",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "events"
+              ]
+            },
+            "description": "List all events in the namespace"
+          },
+          "response": []
+        },
+        {
+          "name": "List Warning Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/events?fieldSelector=type%3DWarning",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "events?fieldSelector=type%3DWarning"
+              ]
+            },
+            "description": "List only Warning events"
+          },
+          "response": []
+        },
+        {
+          "name": "List ResourceQuotas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/resourcequotas",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "resourcequotas"
+              ]
+            },
+            "description": "List resource quotas for the namespace"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    },
+    {
+      "name": "🗄 SQL Server — Database Access",
+      "description": "Endpoints to locate and connect to SQL Server on OpenShift",
+      "item": [
+        {
+          "name": "Find SQL Server Pods",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods?labelSelector=app%3Dmssql",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods?labelSelector=app%3Dmssql"
+              ]
+            },
+            "description": "Find pods with label app=mssql"
+          },
+          "response": []
+        },
+        {
+          "name": "Find SQL Server Service",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/services/{{service_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "services",
+                "{{service_name}}"
+              ]
+            },
+            "description": "Get the SQL Server service — verify port 1433"
+          },
+          "response": []
+        },
+        {
+          "name": "List Services (find MSSQL)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/services",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "services"
+              ]
+            },
+            "description": "List all services to find the SQL Server one"
+          },
+          "response": []
+        },
+        {
+          "name": "Get SQL Server Secret",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/secrets/{{secret_name}}",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "secrets",
+                "{{secret_name}}"
+              ]
+            },
+            "description": "Get the secret containing SA_PASSWORD — value is base64 encoded. Decode: echo <value> | base64 -d"
+          },
+          "response": []
+        },
+        {
+          "name": "Get SQL Server Pod Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}/log?tailLines=50",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}",
+                "log?tailLines=50"
+              ]
+            },
+            "description": "Get last 50 lines of SQL Server pod logs"
+          },
+          "response": []
+        },
+        {
+          "name": "Get SQL Server Pod Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{oc_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{oc_api_url}}/api/v1/namespaces/{{namespace}}/pods/{{pod_name}}/status",
+              "host": [
+                "{{oc_api_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "namespaces",
+                "{{namespace}}",
+                "pods",
+                "{{pod_name}}",
+                "status"
+              ]
+            },
+            "description": "Check if the SQL Server pod is Running and Ready"
+          },
+          "response": []
+        }
+      ],
+      "_postman_isSubFolder": false
+    }
+  ]
+}
